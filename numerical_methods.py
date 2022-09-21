@@ -1,3 +1,4 @@
+from math import *
 import numpy as np
 import scipy.misc
 from sympy import diff, Symbol, sympify
