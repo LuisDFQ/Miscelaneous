@@ -1,4 +1,6 @@
 ## Miscelaneous
 
 ### Enviroment activation:
-  env\Scripts\activate
+~~~
+env\Scripts\activate
+~~~
