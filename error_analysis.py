@@ -124,12 +124,16 @@ def FunDef(iv):
         F = F.replace('+', ',')
     if '/' in F:
         F = F.replace('/', ',')
+    if '.' in F:
+        F = F.replace('.','')
     if ',,' in F:
         F = F.replace(',,', ',')
     varL = F.split(',')
 
     for t in varL:
         while varL.count(t) > 1:
+            varL.remove(t)
+        if t.isdigit():
             varL.remove(t)
 
     ivL = iv.split(',')
