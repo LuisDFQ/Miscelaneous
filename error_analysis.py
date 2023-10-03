@@ -222,6 +222,12 @@ elif ChOp.upper() == 'N' or ChOp.upper() == 'NO':
         Ld = []
         for i in range(len(Dat.split(','))):
             Ld.append(float(Dat.split(',')[i]))
+    Med = input(
+        '\nDo you know how was measured this variable (instrumentation)?')
+    if Med.upper() == 'Y' or Med.upper() == 'YES':
+        TypeB = thumb_rules()
+    else:
+        TypeB = 0
     if ChAn == 1:
         print('\nMean: '+str(mean(Ld)))
     elif ChAn == 2:
@@ -229,9 +235,9 @@ elif ChOp.upper() == 'N' or ChOp.upper() == 'NO':
     elif ChAn == 3:
         print("\nMean's variance: "+str(variance_m(len(Ld), Ld)))
     elif ChAn == 4:
-        print('\nUncertainty: '+str(uncertainty(variance(len(Ld), Ld))))
+        print('\nUncertainty: '+str(sqrt((uncertainty(variance(len(Ld), Ld)))**2+TypeB**2)))
         print('\nUncertainty (best estimation): ' +
-              str(uncertainty(variance_m(len(Ld), Ld))))
+              str(sqrt((uncertainty(variance_m(len(Ld), Ld)))**2+TypeB**2)))
     else:
         print('Result (best estimated): '+str(mean(Ld)) +
               ' +/- '+str(uncertainty(variance_m(len(Ld), Ld))))
