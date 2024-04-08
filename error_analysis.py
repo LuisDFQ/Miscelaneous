@@ -6,17 +6,13 @@ from sympy import diff, Symbol, sympify
 # mainly the referent to Error analysis
 
 
-def mean(Q):  # Mean
-    if type(Q) != list:
-        raise TypeError('Q must be a list.')
-    if Q == []:
+def mean(Q: list):  # Mean
+    if Q==[]:
         raise ValueError('Q must be a non-empty list.')
     return sum(Q)/len(Q)
 
 
-def variance(n, Q):  # Variance
-    if type(Q) != list:
-        raise TypeError('Q must be a list.')
+def variance(n, Q: list):  # Variance
     if len(Q) != n:
         raise ValueError('You must insert n data points.')
     T = []
@@ -25,9 +21,7 @@ def variance(n, Q):  # Variance
     return 1/(n-1)*sum(T)
 
 
-def variance_1m(f, IV, U):  # Variance for 1 measurement (quadrature sum)
-    if type(IV) != dict or type(U) != dict:
-        raise TypeError('IV and U must be dictionaries.')
+def variance_1m(f, IV: dict, U:dict):  # Variance for 1 measurement (quadrature sum)
     T = []
     obj = {}
     for ob in IV:
@@ -43,8 +37,6 @@ def variance_m(n, Q):  # Mean's variance
 
 
 def e_covariance(n, X1, X2):  # Estimated covariance associated to X1 and X2
-    if type(X1) != list or type(X2) != list:
-        raise TypeError('X1 and X2 must be lists.')
     T = []
     for i in range(n):
         T.append((X1[i]-mean(X1))*(X2[i]-mean(X2)))
@@ -56,8 +48,6 @@ def uncertainty(variance):  # Standard deviation (or Standard Error of the Mean)
 
 
 def variance_c_nocor(f, IV):  # Combined variance for independent (non-correlated) variables
-    if type(IV) != dict:
-        raise TypeError('IV must be a dictionary.')
     T = []
     obj = {}
     for ob in IV:
@@ -65,10 +55,12 @@ def variance_c_nocor(f, IV):  # Combined variance for independent (non-correlate
     for s in obj:
         if len(IV[str(s)]) == 1:
             T.append((diff(f, obj[s]).doit().subs(
-            {Symbol(o): mean(IV[o]) for o in IV}))**2*Unc1[str(s)][0]**2)
+                {Symbol(o): mean(IV[o]) for o in IV}))**2*Unc1[str(s)][0]**2)
         else:
+            print("\nFor variable "+str(s)+", it is necessary to know how was measured ...")
+            typeB = thumb_rules()
             T.append((diff(f, obj[s]).doit().subs(
-            {Symbol(o): mean(IV[o]) for o in IV}))**2*variance_m(n, IV[str(s)]))
+                {Symbol(o): mean(IV[o]) for o in IV}))**2*(variance_m(n, IV[str(s)])+typeB**2))
     return sum(T).doit()
 
 
@@ -78,13 +70,13 @@ def variance_c_cor(f, IV):  # Combined variance for correlated variables (it gen
     for ob in IV:
         obj[ob] = Symbol(ob)
     T1 = []
-    for i in obj:
+    Variab = [var for var in IV.keys()]
+    for i in Variab[:-1]:
+        T2 = []
         if len(IV[str(i)]) == 1:
-            T1.append(diff(f,obj[i]).doit().subs(
-            {Symbol(o): mean(IV[o]) for o in IV})**2*Unc1[str(i)][0]**2)
+            pass
         else:
-            T2 = []
-            for j in obj:
+            for j in Variab[1:]:
                 if len(IV[str(j)]) == 1:
                     pass
                 else:
@@ -93,50 +85,58 @@ def variance_c_cor(f, IV):  # Combined variance for correlated variables (it gen
                     if e_covariance(n, IV[str(i)], IV[str(j)]) != 0 and str(i) != str(j):
                         if [str(i), str(j)] not in Corr and [str(j), str(i)] not in Corr:
                             print('\nVariables ' + str(i) + ' and ' +
-                                  str(j) + ' are correlated.')
+                                str(j) + ' are correlated.')
                             Corr.append([str(i), str(j)])
             T1.append(diff(f, obj[i]).doit().subs(
-                {Symbol(o): mean(IV[o]) for o in IV})*sum(T2))
-    return sum(T1).doit()
+                    {Symbol(o): mean(IV[o]) for o in IV})*sum(T2))
+    return variance_c_nocor(f, IV) + 2*sum(T1).doit()
+
 
 def thumb_rules():
-    kt = input(
-        "\nDo you know manufacturer's specifications about absolute tolerance? (Yes or no)\n")
-    if kt.upper() == 'Y' or kt.upper() == 'YES':
-        try:
-            at = float(input('Insert the instrumental absolute tolerance: '))
-        except:
-            raise TypeError('You must insert a number.')
-        unc = at/sqrt(3)
-    elif kt.upper() == 'N' or kt.upper() == 'NO':
-        print('\n** ATTENTION **: Rules of thumb will be applied.')
-        try:
-            ti = int(input(
-                '\nWhat kind of instrument did you use for measurement? [1] Digital or [2] Analog\n'))
-            if ti != 1 and ti != 2:
-                raise ValueError('Type an existing option.')
-        except:
-            raise TypeError('You must insert an integer.')
-        if ti == 1:
+    que = input("\nDo you know what instrument was used for obtaining the measurements? (Yes or no)\n")
+    if que.upper() == 'Y' or que.upper() == 'YES':
+        kt = input(
+            "\nDo you know manufacturer's specifications about absolute tolerance? (Yes or no)\n")
+        if kt.upper() == 'Y' or kt.upper() == 'YES':
             try:
-                lsd = float(
-                    input('\nInsert the value of the least significant digit place displayed: '))
+                at = float(input('Insert the instrumental absolute tolerance: '))
             except:
                 raise TypeError('You must insert a number.')
-            unc = 5*lsd
+            unc = at/sqrt(3)
+        elif kt.upper() == 'N' or kt.upper() == 'NO':
+            print('\n** ATTENTION **: Rules of thumb will be applied.')
+            try:
+                ti = int(input(
+                    '\nWhat kind of instrument did you use for measurement? [1] Digital or [2] Analog\n'))
+                if ti != 1 and ti != 2:
+                    raise ValueError('Type an existing option.')
+            except:
+                raise TypeError('You must insert an integer.')
+            if ti == 1:
+                try:
+                    lsd = float(
+                        input('\nInsert the value of the least significant digit place displayed: '))
+                except:
+                    raise TypeError('You must insert a number.')
+                unc = 5*lsd
+            else:
+                try:
+                    lsd = float(input('\nInsert the smallest division: '))
+                except:
+                    raise TypeError('You must insert a number.')
+                unc = lsd/2
         else:
-            try:
-                lsd = float(input('\nInsert the smallest division: '))
-            except:
-                raise TypeError('You must insert a number.')
-            unc = lsd/2
+            raise ValueError("It's a Yes or No question.")
+    elif que.upper() == 'N' or que.upper() == 'NO':
+        unc = 0
     else:
         raise ValueError("It's a Yes or No question.")
     return unc
 
+
 def FunDef(iv):
     F = input(
-        '\nType the function that relates measured variables y = f(x,z,...) with dependent variable: ')
+        '\nType the function that relates measured variables y = f(x,z,...) with dependent variable\nNOTE: If there is constants, type the numeric value.\nPlease write the equation: ')
     F0 = F
     if '^' in F:
         F = F.replace('^', '**')
@@ -170,12 +170,12 @@ def FunDef(iv):
     if '/' in F:
         F = F.replace('/', ',')
     if '.' in F:
-        F = F.replace('.',',')
+        F = F.replace('.', ',')
     if ',,' in F:
         F = F.replace(',,', ',')
-    varL = F.split(',')
+    varL = F.split(',')  # List of measurable variables
 
-    for i in range(2): # Sweep two times for detect possible additional variables
+    for i in range(2):  # Sweep two times for detect possible additional variables
         for t in varL:
             if t.isdigit():
                 varL.remove(t)
@@ -219,28 +219,32 @@ elif ChOp.upper() == 'N' or ChOp.upper() == 'NO':
             float(p)
         except:
             raise TypeError('You must insert numbers.')
-        Ld = []
-        for i in range(len(Dat.split(','))):
-            Ld.append(float(Dat.split(',')[i]))
-    Med = input(
-        '\nDo you know how was measured this variable (instrumentation)?')
-    if Med.upper() == 'Y' or Med.upper() == 'YES':
-        TypeB = thumb_rules()
-    else:
-        TypeB = 0
+        Ld = [float(i) for i in Dat.split(',')]
+        def Excep(med):
+            if len(med) == 1:
+                raise ValueError('You cannot calculate this selection')
     if ChAn == 1:
         print('\nMean: '+str(mean(Ld)))
     elif ChAn == 2:
+        Excep(Ld)
         print('\nVariance: '+str(variance(len(Ld), Ld)))
     elif ChAn == 3:
+        Excep(Ld)
         print("\nMean's variance: "+str(variance_m(len(Ld), Ld)))
     elif ChAn == 4:
-        print('\nUncertainty: '+str(sqrt((uncertainty(variance(len(Ld), Ld)))**2+TypeB**2)))
-        print('\nUncertainty (best estimation): ' +
-              str(sqrt((uncertainty(variance_m(len(Ld), Ld)))**2+TypeB**2)))
+        if len(Ld) == 1:
+            print('\nUncertainty: ' + str(thumb_rules()))
+        else:
+            print('\nUncertainty: ' +
+              str(sqrt(variance(len(Ld), Ld)+thumb_rules()**2)))
+            print('\nUncertainty (best estimation): ' +
+              str(sqrt(variance_m(len(Ld), Ld)+thumb_rules()**2)))
     else:
-        print('Result (best estimated): '+str(mean(Ld)) +
-              ' +/- '+str(uncertainty(variance_m(len(Ld), Ld))))
+        if len(Ld) == 1:
+            print('\nResult: '+str(mean(Ld)) +' +/- '+ str(thumb_rules()))
+        else:
+            print('Result (best estimated): '+str(mean(Ld)) +
+              ' +/- '+str(sqrt(variance_m(len(Ld), Ld)+thumb_rules()**2)))
 else:
     raise ValueError("It's a Yes or No question.")
 M1 = False
@@ -253,13 +257,8 @@ if UPL:
     elif n == 1:
         print('\nYou are gonna approximate a variable taking one measurement by measurable ones.')
         Om = input(
-            '\n** ATTENTION **: Instrumental Uncertainty Method will be applied. Do you want to proceed? (Yes or no)\n')
-        if Om.upper() == 'Y' or Om.upper() == 'YES':
-            M1 = True
-        elif Om.upper() == 'N' or Om.upper() == 'NO':
-            pass
-        else:
-            raise ValueError("It's a Yes or No question.")
+            '\n** ATENTION **: Instrumental Uncertainty Method will be applied.\n')
+        M1 = True
     if M1:
         # This procedure is according to Smith,W.F.(ed.)(2020). Experimental Physics. Principles and Practice for the Laboratory. CRC Press.
         U = {}
@@ -277,6 +276,7 @@ if UPL:
         if n == 0 or n == 1:
             raise ValueError(
                 'The number of measurements must be bigger than 1.')
+        Unc1 = {}
         for a in iv.split(','):
             D = input('\nInsert data points for variable ' +
                       a + ' (Ex.: 1,3.0,4,...): ')
@@ -285,9 +285,7 @@ if UPL:
                     float(u)
                 except:
                     raise TypeError('You must insert numbers.')
-            L = []
-            for i in range(len(D.split(','))):
-                L.append(float(D.split(',')[i]))
+            L = [float(i) for i in D.split(',')]
             IV[a] = L
             if len(L) != n:
                 Ans = input(
@@ -330,5 +328,8 @@ if UPL:
         elif ChC == 2:
             print('Result: '+variance_c_cor(f, IV))
         else:
-            print('Result (best estimated): '+str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV}))+' +/- '+str(
+            print(40*'-')
+            print('\nResult: '+str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV}))+' +/- '+str(uncertainty(variance_c_nocor(f, IV))))
+            print(40*'-')
+            print('\nResult (best estimated with correlations): '+str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV}))+' +/- '+str(
                 uncertainty(variance_c_cor(f, IV))))
