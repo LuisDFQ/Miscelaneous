@@ -36,7 +36,7 @@ def variance_m(n, Q):  # Mean's variance
     return 1/n*variance(n, Q)
 
 
-def e_covariance(n, X1, X2):  # Estimated covariance associated to X1 and X2
+def e_covariance(n, X1, X2):  # Estimated covariance associated to X1 and X2 (according Cuban Rules)
     T = []
     for i in range(n):
         T.append((X1[i]-mean(X1))*(X2[i]-mean(X2)))
@@ -136,7 +136,7 @@ def thumb_rules():
 
 def FunDef(iv):
     F = input(
-        '\nType the function that relates measured variables y = f(x,z,...) with dependent variable\nNOTE: If there is constants, type the numeric value.\nPlease write the equation: ')
+        '\nType the function that relates measured variables y = f(x,z,...)\nNOTE: If there is constants, type the numeric value.\nPlease write the equation: ')
     F0 = F
     if '^' in F:
         F = F.replace('^', '**')
@@ -235,10 +235,11 @@ elif ChOp.upper() == 'N' or ChOp.upper() == 'NO':
         if len(Ld) == 1:
             print('\nUncertainty: ' + str(thumb_rules()))
         else:
+            TR = thumb_rules()
             print('\nUncertainty: ' +
-              str(sqrt(variance(len(Ld), Ld)+thumb_rules()**2)))
+              str(sqrt(variance(len(Ld), Ld)+TR**2)))
             print('\nUncertainty (best estimation): ' +
-              str(sqrt(variance_m(len(Ld), Ld)+thumb_rules()**2)))
+              str(sqrt(variance_m(len(Ld), Ld)+TR**2)))
     else:
         if len(Ld) == 1:
             print('\nResult: '+str(mean(Ld)) +' +/- '+ str(thumb_rules()))
