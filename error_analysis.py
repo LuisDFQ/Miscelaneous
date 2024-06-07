@@ -193,144 +193,197 @@ def FunDef(iv):
             "You've inserted additional variables or have omitted them in equation in comparison to reported ones.")
     return F0
 
-
-ChOp = input(
-    '\nDo you want to find a variable by indirected measurement? (Yes or no)\n')
-if ChOp.upper() == 'Y' or ChOp.upper() == 'YES':
-    print('** ATTENTION **: Uncertainty Propagation Law will be applied.')
-    UPL = True
-elif ChOp.upper() == 'N' or ChOp.upper() == 'NO':
-    UPL = False
-    try:
-        ChAn = int(input(
-            "\nWhat do you want to calculate for a given variable?\n[1] Mean\n[2] Variance\n[3] Mean's variance\n[4] Uncertainty\n[5] Mean and ucertainty\n\nType an option: "))
-    except:
-        raise TypeError('You must insert an integer.')
-    for op in range(1, 6):
-        if ChAn != op:
-            if op == 5:
-                raise ValueError('Type an existing option.')
-            pass
-        else:
-            break
-    Dat = input('\nInsert data points for variable (Ex.: 1,3.0,4,...): ')
-    for p in Dat.split(','):
-        try:
-            float(p)
-        except:
-            raise TypeError('You must insert numbers.')
-        Ld = [float(i) for i in Dat.split(',')]
-        def Excep(med):
-            if len(med) == 1:
-                raise ValueError('You cannot calculate this selection')
-    if ChAn == 1:
-        print('\nMean: '+str(mean(Ld)))
-    elif ChAn == 2:
-        Excep(Ld)
-        print('\nVariance: '+str(variance(len(Ld), Ld)))
-    elif ChAn == 3:
-        Excep(Ld)
-        print("\nMean's variance: "+str(variance_m(len(Ld), Ld)))
-    elif ChAn == 4:
-        if len(Ld) == 1:
-            print('\nUncertainty: ' + str(thumb_rules()))
-        else:
-            TR = thumb_rules()
-            print('\nUncertainty: ' +
-              str(sqrt(variance(len(Ld), Ld)+TR**2)))
-            print('\nUncertainty (best estimation): ' +
-              str(sqrt(variance_m(len(Ld), Ld)+TR**2)))
-    else:
-        if len(Ld) == 1:
-            print('\nResult: '+str(mean(Ld)) +' +/- '+ str(thumb_rules()))
-        else:
-            print('Result (best estimated): '+str(mean(Ld)) +
-              ' +/- '+str(sqrt(variance_m(len(Ld), Ld)+thumb_rules()**2)))
-else:
-    raise ValueError("It's a Yes or No question.")
-M1 = False
-if UPL:
-    IV = {}
-    iv = input('\nInsert symbols of each measured variable (Ex.: x,y,z,...): ')
-    n = int(input('\nHow many measurements did you realize? '))
-    if n < 0:
-        raise ValueError('You must insert a positive integer.')
-    elif n == 1:
-        print('\nYou are gonna approximate a variable taking one measurement by measurable ones.')
-        Om = input(
-            '\n** ATENTION **: Instrumental Uncertainty Method will be applied.\n')
-        M1 = True
-    if M1:
-        # This procedure is according to Smith,W.F.(ed.)(2020). Experimental Physics. Principles and Practice for the Laboratory. CRC Press.
-        U = {}
-        for a in iv.split(','):
+############################################## Code-User interactions ########################################
+Q1 = input('Select one by writting the number of the option: (1) Linear Fit or (2) Error processing\n')
+if Q1 == '1':
+    pass
+    print('You have selected Linear Fit (Y = M*X + N)')
+    Xdata = input('\nInsert data points for variable X (Example: 1,3.0,4,...): ')
+    for x in Xdata.split(','):
             try:
-                meas = float(input('\nInsert the measurement of '+a+': '))
+                float(x)
             except:
-                raise TypeError('You must insert a number.')
-            IV[a] = [meas]
-            U[a] = [thumb_rules()]
-        f = sympify(FunDef(iv))
-        print('Result: '+str(f.doit().subs({Symbol(v): IV[v][0] for v in IV}))+' +/- '+str(
-            uncertainty(variance_1m(f, IV, U))))
-    else:
-        if n == 0 or n == 1:
-            raise ValueError(
-                'The number of measurements must be bigger than 1.')
-        Unc1 = {}
-        for a in iv.split(','):
-            D = input('\nInsert data points for variable ' +
-                      a + ' (Ex.: 1,3.0,4,...): ')
-            for u in D.split(','):
-                try:
-                    float(u)
-                except:
-                    raise TypeError('You must insert numbers.')
-            L = [float(i) for i in D.split(',')]
-            IV[a] = L
-            if len(L) != n:
-                Ans = input(
-                    'Was this variable measured one time? (Y)es or (N)o\n')
-                if Ans.upper() == 'Y' or Ans.upper() == 'YES':
-                    Unc1[a] = [thumb_rules()]
-                elif Ans.upper() == 'N' or Ans.upper() == 'NO':
-                    raise ValueError("You've not inserted "+str(n) +
-                                     ' measurements as you declared before.')
-                else:
-                    raise ValueError("It's a Yes or No question.")
-
-        f = sympify(FunDef(iv))
-
-        CV = input(
-            '\nDo you want to know if correlated variables exist in your data? (Yes or no)\n')
-        if CV.upper() == 'Y' or CV.upper() == 'YES':
-            if variance_c_cor(f, IV) == variance_c_nocor(f, IV):
-                print('\nSummary: No correlated variables found.')
-            else:
-                print('\nSummary: Correlated variables found.')
-        elif CV.upper() == 'N' or CV.upper() == 'NO':
-            pass
-        else:
-            raise ValueError("It's a Yes or No question.")
+                raise TypeError('You must insert numbers.')
+    XD = [float(i) for i in Xdata.split(',')]
+    Ydata = input('\nInsert data points for variable Y (Example: 1,3.0,4,...): ')
+    for y in Xdata.split(','):
+            try:
+                float(y)
+            except:
+                raise TypeError('You must insert numbers.')
+    YD = [float(i) for i in Ydata.split(',')]
+    if len(XD) != len(YD):
+        raise ValueError('X and Y must contain the same number of elements or data points.')
+    elif len(XD) <=2:
+        raise ValueError('You need more than 2 data points.')
+    Xsum = sum(XD)
+    Ysum = sum(YD)
+    Ndp = len(XD)
+    X2sum = sum([xd**2 for xd in XD])
+    Det = Ndp*X2sum-Xsum**2
+    if Det == 0:
+        raise ValueError('These data cannot be fited. Maybe, you have repeated data points.')
+    XYsum = sum([xd*yd for xd,yd in zip(XD,YD)])
+    Slope = (Ndp*XYsum-Xsum*Ysum)/Det
+    Intercept = (X2sum*Ysum-Xsum*XYsum)/Det
+    SumDiff = sum([(yd-Intercept-Slope*xd)**2 for xd,yd in zip(XD,YD)])
+    Sfit2 = SumDiff/(Ndp-2)
+    UncSlope = sqrt(Sfit2/Det*Ndp)
+    UncInter = sqrt(Sfit2/Det*X2sum)
+    Ymean = mean(YD)
+    Xmean = mean(XD)
+    R2 = 1-SumDiff/sum([(yd-Ymean)**2 for yd in YD])
+    import matplotlib.pyplot as plt
+    import numpy as np
+    Xvalues = np.arange(min(XD),max(XD))
+    plt.plot(XD, YD, 'o', color = 'black')
+    plt.plot(Xmean,Ymean, 'o', color = 'red')
+    plt.plot(Xvalues, Slope*Xvalues+Intercept, color ='blue', label = 'Fit')
+    plt.xlabel('$X$')
+    plt.ylabel('$Y$')
+    plt.legend(loc=0)
+    plt.title('Linear fit: $R^2$ ='+str(R2)+', Slope = '+str(Slope)+' $\pm$ '+str(UncSlope)+', Intercept = '+str(Intercept)+' $\pm$ '+str(UncInter))
+    plt.show()
+elif Q1 == '2':
+    ChOp = input(
+        '\nDo you want to find a variable by indirected measurement? (Yes or no)\n')
+    if ChOp.upper() == 'Y' or ChOp.upper() == 'YES':
+        print('** ATTENTION **: Uncertainty Propagation Law will be applied.')
+        UPL = True
+    elif ChOp.upper() == 'N' or ChOp.upper() == 'NO':
+        UPL = False
         try:
-            ChC = int(input(
-                "\nWhat do you want to calculate?\n[1] Combined Variance (no correlated)\n[2] Combined Variance (correlated)\n[3] Uncertainty\n\nType an option: "))
+            ChAn = int(input(
+                "\nWhat do you want to calculate for a given variable?\n[1] Mean\n[2] Variance\n[3] Mean's variance\n[4] Uncertainty\n[5] Mean and ucertainty\n\nType an option: "))
         except:
             raise TypeError('You must insert an integer.')
-        for opt in range(1, 4):
-            if ChC != n:
-                if n == 3:
+        for op in range(1, 6):
+            if ChAn != op:
+                if op == 5:
                     raise ValueError('Type an existing option.')
                 pass
             else:
                 break
-        if ChC == 1:
-            print('Result: '+variance_c_nocor(f, IV))
-        elif ChC == 2:
-            print('Result: '+variance_c_cor(f, IV))
+        Dat = input('\nInsert data points for variable (Example: 1,3.0,4,...): ')
+        for p in Dat.split(','):
+            try:
+                float(p)
+            except:
+                raise TypeError('You must insert numbers.')
+        Ld = [float(i) for i in Dat.split(',')]
+        def Excep(med):
+            if len(med) == 1:
+                raise ValueError('You cannot calculate this selection')
+        if ChAn == 1:
+            print('\nMean: '+str(mean(Ld)))
+        elif ChAn == 2:
+            Excep(Ld)
+            print('\nVariance: '+str(variance(len(Ld), Ld)))
+        elif ChAn == 3:
+            Excep(Ld)
+            print("\nMean's variance: "+str(variance_m(len(Ld), Ld)))
+        elif ChAn == 4:
+            if len(Ld) == 1:
+                print('\nUncertainty: ' + str(thumb_rules()))
+            else:
+                TR = thumb_rules()
+                print('\nUncertainty: ' +
+                str(sqrt(variance(len(Ld), Ld)+TR**2)))
+                print('\nUncertainty (best estimation): ' +
+                str(sqrt(variance_m(len(Ld), Ld)+TR**2)))
         else:
-            print(40*'-')
-            print('\nResult: '+str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV}))+' +/- '+str(uncertainty(variance_c_nocor(f, IV))))
-            print(40*'-')
-            print('\nResult (best estimated with correlations): '+str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV}))+' +/- '+str(
-                uncertainty(variance_c_cor(f, IV))))
+            if len(Ld) == 1:
+                print('\nResult: '+str(mean(Ld)) +' +/- '+ str(thumb_rules()))
+            else:
+                print('Result (best estimated): '+str(mean(Ld)) +
+                ' +/- '+str(sqrt(variance_m(len(Ld), Ld)+thumb_rules()**2)))
+    else:
+        raise ValueError("It's a Yes or No question.")
+    M1 = False
+    if UPL:
+        IV = {}
+        iv = input('\nInsert symbols of each measured variable (Example: x,y,z,...): ')
+        n = int(input('\nHow many measurements did you realize? '))
+        if n < 0:
+            raise ValueError('You must insert a positive integer.')
+        elif n == 1:
+            print('\nYou are gonna approximate a variable taking one measurement by measurable ones.')
+            Om = input(
+                '\n** ATENTION **: Instrumental Uncertainty Method will be applied.\n')
+            M1 = True
+        if M1:
+            # This procedure is according to Smith,W.F.(ed.)(2020). Experimental Physics. Principles and Practice for the Laboratory. CRC Press.
+            U = {}
+            for a in iv.split(','):
+                try:
+                    meas = float(input('\nInsert the measurement of '+a+': '))
+                except:
+                    raise TypeError('You must insert a number.')
+                IV[a] = [meas]
+                U[a] = [thumb_rules()]
+            f = sympify(FunDef(iv))
+            print('Result: '+str(f.doit().subs({Symbol(v): IV[v][0] for v in IV}))+' +/- '+str(
+                uncertainty(variance_1m(f, IV, U))))
+        else:
+            if n == 0 or n == 1:
+                raise ValueError(
+                    'The number of measurements must be bigger than 1.')
+            Unc1 = {}
+            for a in iv.split(','):
+                D = input('\nInsert data points for variable ' +
+                        a + ' (Example: 1,3.0,4,...): ')
+                for u in D.split(','):
+                    try:
+                        float(u)
+                    except:
+                        raise TypeError('You must insert numbers.')
+                L = [float(i) for i in D.split(',')]
+                IV[a] = L
+                if len(L) != n:
+                    Ans = input(
+                        'Was this variable measured one time? (Y)es or (N)o\n')
+                    if Ans.upper() == 'Y' or Ans.upper() == 'YES':
+                        Unc1[a] = [thumb_rules()]
+                    elif Ans.upper() == 'N' or Ans.upper() == 'NO':
+                        raise ValueError("You've not inserted "+str(n) +
+                                        ' measurements as you declared before.')
+                    else:
+                        raise ValueError("It's a Yes or No question.")
+
+            f = sympify(FunDef(iv))
+
+            CV = input(
+                '\nDo you want to know if correlated variables exist in your data? (Yes or no)\n')
+            if CV.upper() == 'Y' or CV.upper() == 'YES':
+                if variance_c_cor(f, IV) == variance_c_nocor(f, IV):
+                    print('\nSummary: No correlated variables found.')
+                else:
+                    print('\nSummary: Correlated variables found.')
+            elif CV.upper() == 'N' or CV.upper() == 'NO':
+                pass
+            else:
+                raise ValueError("It's a Yes or No question.")
+            try:
+                ChC = int(input(
+                    "\nWhat do you want to calculate?\n[1] Combined Variance (no correlated)\n[2] Combined Variance (correlated)\n[3] Uncertainty\n\nType an option: "))
+            except:
+                raise TypeError('You must insert an integer.')
+            for opt in range(1, 4):
+                if ChC != n:
+                    if n == 3:
+                        raise ValueError('Type an existing option.')
+                    pass
+                else:
+                    break
+            if ChC == 1:
+                print('Result: '+variance_c_nocor(f, IV))
+            elif ChC == 2:
+                print('Result: '+variance_c_cor(f, IV))
+            else:
+                print(40*'-')
+                print('\nResult: '+str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV}))+' +/- '+str(uncertainty(variance_c_nocor(f, IV))))
+                print(40*'-')
+                print('\nResult (best estimated with correlations): '+str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV}))+' +/- '+str(
+                    uncertainty(variance_c_cor(f, IV))))
+else:
+    raise ValueError('Only 1 or 2 can be chosen.')
