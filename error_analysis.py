@@ -61,7 +61,7 @@ def variance_c_nocor(f, IV):  # Combined variance for independent (non-correlate
             typeB = thumb_rules()
             T.append((diff(f, obj[s]).doit().subs(
                 {Symbol(o): mean(IV[o]) for o in IV}))**2*(variance_m(n, IV[str(s)])+typeB**2))
-    return sum(T).doit()
+    return sum(T)
 
 
 def variance_c_cor(f, IV):  # Combined variance for correlated variables (it generalises combined variance for independent variables)
@@ -89,7 +89,7 @@ def variance_c_cor(f, IV):  # Combined variance for correlated variables (it gen
                             Corr.append([str(i), str(j)])
             T1.append(diff(f, obj[i]).doit().subs(
                     {Symbol(o): mean(IV[o]) for o in IV})*sum(T2))
-    return variance_c_nocor(f, IV) + 2*sum(T1).doit()
+    return variance_c_nocor(f, IV) + 2*sum(T1)
 
 
 def thumb_rules():
@@ -321,9 +321,11 @@ elif Q1 == '2':
                 str(sqrt(variance_m(len(Ld), Ld)+TR**2)))
         else:
             if len(Ld) == 1:
-                print('\nResult: '+Exper_round(str(mean(Ld)),str(thumb_rules())))
+                R = Exper_round(str(mean(Ld)),str(thumb_rules()))
+                print('\nResult: '+R.replace('$\pm$',' +/- '))
             else:
-                print('Result (best estimated): '+Exper_round(str(mean(Ld)),str(sqrt(variance_m(len(Ld), Ld)+thumb_rules()**2))))
+                R = Exper_round(str(mean(Ld)),str(sqrt(variance_m(len(Ld), Ld)+thumb_rules()**2)))
+                print('Result (best estimated): '+R.replace('$\pm$',' +/- '))
     else:
         raise ValueError("It's a Yes or No question.")
     M1 = False
@@ -349,8 +351,8 @@ elif Q1 == '2':
                 IV[a] = [meas]
                 U[a] = [thumb_rules()]
             f = sympify(FunDef(iv))
-            print('Result: '+str(f.doit().subs({Symbol(v): IV[v][0] for v in IV}))+' +/- '+str(
-                uncertainty(variance_1m(f, IV, U))))
+            Rep = Exper_round(str(f.doit().subs({Symbol(v): IV[v][0] for v in IV})),str(uncertainty(variance_1m(f, IV, U))))
+            print('Result: '+Rep.replace('$\pm$',' +/- '))
         else:
             if n == 0 or n == 1:
                 raise ValueError(
@@ -408,8 +410,10 @@ elif Q1 == '2':
                 print('Result: '+variance_c_cor(f, IV))
             else:
                 print(40*'-')
-                print('\nResult: '+Exper_round(str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV})),str(uncertainty(variance_c_nocor(f, IV)))))
+                Res1 = Exper_round(str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV})),str(uncertainty(variance_c_nocor(f, IV))))
+                print('\nResult: '+Res1.replace('$\pm$',' +/- '))
                 print(40*'-')
-                print('\nResult (best estimated with correlations): '+Exper_round(str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV})),str(uncertainty(variance_c_cor(f, IV)))))
+                Res2 = Exper_round(str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV})),str(uncertainty(variance_c_cor(f, IV))))
+                print('\nResult (best estimated with correlations): '+Res2.replace('$\pm$',' +/- '))
 else:
     raise ValueError('Only 1 or 2 can be chosen.')
