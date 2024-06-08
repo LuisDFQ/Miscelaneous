@@ -193,7 +193,7 @@ def FunDef(iv):
             "You've inserted additional variables or have omitted them in equation in comparison to reported ones.")
     return F0
 
-def Exper_round(a: str, b: str): # Uncertainty report according to Significative-digits's Rule
+def Exper_round(a: str, b: str): # Uncertainty report according to Significative-digits's Rule (a> value, b> uncertainty)
     B = [bi for bi in b]
     A = [ai for ai in a]
     count = 0
@@ -321,10 +321,9 @@ elif Q1 == '2':
                 str(sqrt(variance_m(len(Ld), Ld)+TR**2)))
         else:
             if len(Ld) == 1:
-                print('\nResult: '+str(mean(Ld)) +' +/- '+ str(thumb_rules()))
+                print('\nResult: '+Exper_round(str(mean(Ld)),str(thumb_rules())))
             else:
-                print('Result (best estimated): '+str(mean(Ld)) +
-                ' +/- '+str(sqrt(variance_m(len(Ld), Ld)+thumb_rules()**2)))
+                print('Result (best estimated): '+Exper_round(str(mean(Ld)),str(sqrt(variance_m(len(Ld), Ld)+thumb_rules()**2))))
     else:
         raise ValueError("It's a Yes or No question.")
     M1 = False
@@ -409,9 +408,8 @@ elif Q1 == '2':
                 print('Result: '+variance_c_cor(f, IV))
             else:
                 print(40*'-')
-                print('\nResult: '+str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV}))+' +/- '+str(uncertainty(variance_c_nocor(f, IV))))
+                print('\nResult: '+Exper_round(str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV})),str(uncertainty(variance_c_nocor(f, IV)))))
                 print(40*'-')
-                print('\nResult (best estimated with correlations): '+str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV}))+' +/- '+str(
-                    uncertainty(variance_c_cor(f, IV))))
+                print('\nResult (best estimated with correlations): '+Exper_round(str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV})),str(uncertainty(variance_c_cor(f, IV)))))
 else:
     raise ValueError('Only 1 or 2 can be chosen.')
