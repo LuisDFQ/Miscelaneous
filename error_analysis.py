@@ -193,6 +193,34 @@ def FunDef(iv):
             "You've inserted additional variables or have omitted them in equation in comparison to reported ones.")
     return F0
 
+def Exper_round(a: str, b: str): # Uncertainty report according to Significative-digits's Rule
+    B = [bi for bi in b]
+    A = [ai for ai in a]
+    count = 0
+    pos: bool
+    if B[0] != '0':
+        Bnew = B[:B.index('.')]
+        pos = True
+    else:
+        for i in B[2:]:
+            count += 1
+            if i != '0':
+                break
+        Bnew = B[2:2+count]
+        pos = False
+    digits = len(Bnew)
+    if pos == True:
+        return '{:.0f} +/- {:1.0e}' . format(round(float(a),-(digits-1)),float(b))
+    else:
+        if len(A[A.index('.'):]) < len(B[B.index('.'):]):
+            STR = '0'*(len(B[B.index('.')+1:]) - len(A[A.index('.')+1:]))
+            Amod = [am for am in str(round(float(a),digits))]
+            if len(Amod[A.index('.')+1:]) == digits:
+                STR = ''
+            return f'{round(float(a),digits)}'+STR+' $\pm$ {:1.0e}' .format(float(b), digits = digits)
+        else:
+            return '{:.>{digits}g} $\pm$ {:1.0e}' .format(round(float(a),digits),float(b), digits = digits)
+
 ############################################## Code-User interactions ########################################
 Q1 = input('Select one by writting the number of the option: (1) Linear Fit or (2) Error processing\n')
 if Q1 == '1':
@@ -222,7 +250,7 @@ if Q1 == '1':
     X2sum = sum([xd**2 for xd in XD])
     Det = Ndp*X2sum-Xsum**2
     if Det == 0:
-        raise ValueError('These data cannot be fited. Maybe, you have repeated data points.')
+        raise ValueError('These data cannot be fitted. Maybe, you have repeated some data points.')
     XYsum = sum([xd*yd for xd,yd in zip(XD,YD)])
     Slope = (Ndp*XYsum-Xsum*Ysum)/Det
     Intercept = (X2sum*Ysum-Xsum*XYsum)/Det
@@ -242,7 +270,7 @@ if Q1 == '1':
     plt.xlabel('$X$')
     plt.ylabel('$Y$')
     plt.legend(loc=0)
-    plt.title('Linear fit: $R^2$ ='+str(R2)+', Slope = '+str(Slope)+' $\pm$ '+str(UncSlope)+', Intercept = '+str(Intercept)+' $\pm$ '+str(UncInter))
+    plt.title('Linear fit: $R^2$ ='+str(round(R2,2))+', Slope = '+Exper_round(str(Slope),str(UncSlope))+', Intercept = '+Exper_round(str(Intercept),str(UncInter)))
     plt.show()
 elif Q1 == '2':
     ChOp = input(
