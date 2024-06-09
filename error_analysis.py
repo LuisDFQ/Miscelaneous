@@ -394,12 +394,12 @@ elif Q1 == '2':
                 raise ValueError("It's a Yes or No question.")
             try:
                 ChC = int(input(
-                    "\nWhat do you want to calculate?\n[1] Combined Variance (no correlated)\n[2] Combined Variance (correlated)\n[3] Uncertainty\n\nType an option: "))
+                    "\nWhat do you want to calculate?\n[1] Combined Variance (no correlated)\n[2] Combined Variance (correlated)\n[3] Uncertainty\n[4] Uncertainty (under correlations)\nType an option: "))
             except:
                 raise TypeError('You must insert an integer.')
-            for opt in range(1, 4):
+            for opt in range(1, 5):
                 if ChC != n:
-                    if n == 3:
+                    if n == 4:
                         raise ValueError('Type an existing option.')
                     pass
                 else:
@@ -408,10 +408,11 @@ elif Q1 == '2':
                 print('Result: '+variance_c_nocor(f, IV))
             elif ChC == 2:
                 print('Result: '+variance_c_cor(f, IV))
-            else:
+            elif ChC == 3:
                 print(40*'-')
                 Res1 = Exper_round(str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV})),str(uncertainty(variance_c_nocor(f, IV))))
                 print('\nResult: '+Res1.replace('$\pm$',' +/- '))
+            else:
                 print(40*'-')
                 Res2 = Exper_round(str(f.doit().subs({Symbol(v): mean(IV[v]) for v in IV})),str(uncertainty(variance_c_cor(f, IV))))
                 print('\nResult (best estimated with correlations): '+Res2.replace('$\pm$',' +/- '))
