@@ -199,6 +199,9 @@ def Exper_round(a: str, b: str): # Uncertainty report according to Significative
     count = 0
     pos: bool
     if B[0] != '0':
+        if '.' not in B:
+            B.append('.')
+            B.append('0')
         Bnew = B[:B.index('.')]
         pos = True
     else:
