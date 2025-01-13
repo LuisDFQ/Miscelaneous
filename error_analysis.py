@@ -175,7 +175,7 @@ def FunDef(iv):
         F = F.replace(',,', ',')
     varL = F.split(',')  # List of measurable variables
 
-    for i in range(2):  # Sweep two times for detect possible additional variables
+    for i in range(3):  # Sweep three times for detect possible additional variables
         for t in varL:
             if t.isdigit():
                 varL.remove(t)
